@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<script type='text/javascript'>
+function Node(value) {
+    this.height = 1;
+    this.value = value;
+    this.left = null;
+    this.right = null;
+    this.parent = null;
+}
+
+function AvlTree(less) {
+    if (less) {
+        this._less = less;
+    }
+}
+
+AvlTree.prototype = {
+    _less: function(a, b) {
+        return a - b;
+    },
+    _head: null,
+    insert: function(v) {
+        if (this._head == null) {
+            this._head = new Node(v);
+        } else {
+            this._insert(this._head, v);
+        }
+    },
+    _getHeight: function(n) {
+        if (n && n.height) {
+            return n.height;
+        }
+        return 0;
+    },
+    _updateHeight: function(n) {
+        n.height = Math.max(this._getHeight(n.left), this._getHeight(n.right)) + 1;
+    },
+    _balanceFactor: function(n) {
+        if (n) {
+            return this._getHeight(n.left) - this._getHeight(n.right);
+        }
+        return 0;
+    },
+    _insert: function(n, v) {
+        var comp = this._less(n.value, v)
+        if (comp > 0) {
+            if (n.left) {
+                this._insert(n.left, v);
+            } else {
+                var newN = new Node(v);
+                newN.parent = n;
+                n.left = newN;
+            }
+        } else if (comp < 0) {
+            if (n.right) {
+                this._insert(n.right, v);
+            } else {
+                var newN = new Node(v);
+                newN.parent = n;
+                n.right = newN;
+            }
+        } // If we've found a value that's already in the tree, do nothing
+                
+        var balance = this._balanceFactor(n);
+        if (balance > 1) {
+            if (this._balanceFactor(n.left) > 0) {
+                this._rotateLeft(n.left);
+            }
+            this._rotateRight(n);
+        } else if (balance < -1) {
+            if (this._balanceFactor(n.right) < 0) {
+                this._rotateRight(n.right);
+            }
+            this._rotateLeft(n);
+        }
+        // TODO: can this be an else?
+        this._updateHeight(n);
+    },
+    _rotateLeft: function(n) {
+        if (n && n.right) {
+            var right = n.right;
+            var parent = n.parent;
+            right.parent = n.parent;
+            n.parent = right;
+            n.right = right.left;
+            right.left = n;
+            
+            this._updateHeight(n);
+            this._updateHeight(right);
+            
+            if (parent) {
+                if (parent.left == n) {
+                    parent.left = right;
+                } else {
+                    parent.right = right;
+                }
+                this._updateHeight(parent);
+            } else {
+                this._head = right;
+            }
+        }
+    },
+    _rotateRight: function(n) {
+        if (n && n.left) {
+            var left = n.left;
+            var parent = n.parent;
+            left.parent = n.parent;
+            n.parent = left;
+            n.left = left.right;
+            left.right = n;
+            
+            this._updateHeight(n);
+            this._updateHeight(left);
+
+            if (parent) {
+                if (parent.left == n) {
+                    parent.left = right;
+                } else {
+                    parent.right = right;
+                }
+                this._updateHeight(parent);
+            } else {
+                this._head = left;
+            }
+        }
+    }
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+    t = new AvlTree();
+    for (var i = 0; i < 5; i++) {
+        t.insert(i);
+    }
+    
+    /*
+    var b1 = new Node(4);
+    var b2 = new Node(6);
+    var m2 = new Node(5);
+    b1.parent = m2;
+    b2.parent = m2;
+    m2.left = b1;
+    m2.right = b2;
+    t._updateHeight(m2);
+    
+    var m1 = new Node(1);
+    var h = new Node(3);
+    m1.parent = h;
+    m2.parent = h;
+    h.left = m1;
+    h.right = m2;
+    t._updateHeight(h);
+    
+    t._head = h;
+    
+    t._rotateLeft(m2);
+    t._rotateRight(h);*/
+    /*
+        3
+      1   5
+         4 6
+         
+        5
+      3   6
+     1 4
+    */
+});
+</script>
+</head>
+<body>
+</body>
+</html>

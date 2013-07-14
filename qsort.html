@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type='text/javascript'>
+function tpartition(a) {
+  var l, u = 0;
+  if (a[a.length - 1] > a[a.length - 2]) {
+    l = a[a.length - 2];
+    u = a[a.length - 1];
+  } else {
+    l = a[a.length - 1];
+    u = a[a.length - 2];
+    swap(a.length - 1, a.length - 2);
+  }
+  var pl = 0;
+  var pu = 0;
+  
+  for (var i = 0, len = a.length - 3; i <= len; i++) {
+    var v = a[i];
+    if (v < l) {
+      swap(pu, i);
+      swap(pu, pl);
+      pu++;
+      pl++;
+    } else if (v < u) {
+      swap(pu, i);
+      pu++;
+    }
+  }
+  console.log([pl, pu]);
+  
+  swap(pu, a.length - 1);
+  pu++;
+  swap(pu, a.length - 2);
+  swap(pu, pl);
+  
+  function swap(i1, i2) {
+    var v1 = a[i1];
+    a[i1] = a[i2];
+    a[i2] = v1;
+  }
+}
+
+
+function quicksort(a) {
+  
+  function partition(s, e) {
+    var v = a[e];
+    var p = s;
+    var pv = a[p];
+    while (s < e) {
+      var sv = a[s];
+      if (sv < v) {
+        a[p] = sv;
+        a[s] = pv;
+        p++;
+        pv = a[p];
+      }
+      s++;
+    }
+    
+    a[e] = pv;
+    a[p] = v;
+    
+    return p;
+  }
+  
+  function qsort(s, e) {
+    if (s == e) {
+      return;
+    }
+    
+    var p = partition(s, e);
+    if (p > s) {
+      qsort(s, p - 1);
+    }
+    if (p < e) {
+      qsort(p + 1, e);
+    }
+  }
+  
+  qsort(0, a.length - 1);
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  var r = Math.random().toString();
+  var a = [];
+  for (var i = 2, len = r.length; i < len; i++) {
+    a.push(parseInt(r[i]));
+  }
+  //quicksort(a);
+  document.body.innerHTML = a + "<br/>";
+  tpartition(a);
+  document.body.innerHTML += a;
+  
+});
+</script>
+</head>
+<body>
+</body>
+</html>

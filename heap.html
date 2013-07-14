@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+<script type='text/javascript'>
+function MaxHeap(less) {
+  this._array = new Array(100);
+  this.count = 0;
+  if (less)
+  this._less = less;
+}
+
+MaxHeap.prototype = {
+  peek: function() {
+    return this._array[0];
+  },
+  pop: function() {
+    var retValue = this._array[0];
+    var end = this.count - 1;
+    this._array[0] = this._array[end];
+    this._array[end] = null;
+    this.count -= 1;
+    this._moveDown(0);
+    return retValue;
+  },
+  push: function(value) {
+    this._array[this.count] = value;
+    this._moveUp(this.count);
+    this.count += 1;
+  },
+  _moveDown: function(elem) {    
+    var ci = this._childIndices(elem);
+    if (ci.left >= this.count) return; // Reached the bottom of the heap
+    
+    var val = this._array[elem];
+    var leftVal = this._array[ci.left];
+    
+    if (ci.right >= this.count && this._less(val,leftVal) < 0) {
+      this._array[elem] = leftVal;
+      this._array[ci.left] = val;
+      this._moveDown(ci.left);
+      return;
+    }
+    
+    var rightVal = this._array[ci.right];
+    if (this._less(val, rightVal) < 0 && this._less(leftVal, rightVal) <= 0) {
+      this._array[elem] = rightVal;
+      this._array[ci.right] = val;
+      this._moveDown(ci.right);
+    } else if (this._less(val, leftVal) < 0 && this._less(leftVal, rightVal) > 0) {
+      this._array[elem] = leftVal;
+      this._array[ci.left] = val;
+      this._moveDown(ci.left);
+    }
+  },
+  _moveUp: function(elem) {
+    if (elem == 0) return;
+    var parent = this._parentIndex(elem);
+    var val = this._array[elem];
+    var parentVal = this._array[parent];
+    
+    if (this._less(parentVal, val) < 0) {
+      this._array[parent] = val;
+      this._array[elem] = parentVal;
+      this._moveUp(parent);
+    }
+  },
+  _childIndices: function(elem) {
+    return {
+      left: elem * 2 + 1,
+      right: elem * 2 + 2
+    };
+  },
+  _parentIndex: function(elem) {
+    var parent = (((elem + 1) / 2) | 0) - 1;
+    return parent;
+  },
+  _less: function (a, b) {
+    return a - b;
+  }
+};
+
+function Skyline(bldgArray) {
+  var bldgHeight = new MaxHeap(function (a, b) { return a.height - b.height; });
+  bldgArray.sort(function (a, b) {
+    return a.start - b.start;
+    });
+  
+  var points = [{ x: 0, y: 0}];
+  
+  while (bldgArray.length > 0 || bldgHeight.count > 0) {
+    var lastPoint = points[points.length - 1];
+    
+    // Remove all the smaller buildings that have already been passed
+    while (bldgHeight.count > 0 && bldgHeight.peek().end < lastPoint.x) {
+      bldgHeight.pop();
+    }
+    
+    if (bldgHeight.count === 0) {
+      // Go to ground level if there are no buildings at the current point
+      points.push({
+        x: lastPoint.x,
+        y: 0
+      });
+      
+      // Move to the next closest building
+      if (bldgArray.length > 0) {
+        var firstBldg = bldgArray[0];
+        while (bldgArray.length > 0 && bldgArray[0].start === firstBldg.start) {
+          bldgHeight.push(bldgArray.shift());
+        }
+      }
+    }
+    
+    if (bldgHeight.count > 0) {
+      var topBldg = bldgHeight.peek();
+      if (topBldg.height > lastPoint.y) {
+        points.push({
+          x: topBldg.start,
+          y: lastPoint.y
+        });
+        points.push({
+          x: topBldg.start,
+          y: topBldg.height
+        });
+      }
+      
+      if (bldgArray.length === 0 || topBldg.end < bldgArray[0].start) {
+        bldgHeight.pop();
+        points.push({
+          x: topBldg.end,
+          y: topBldg.height
+        });
+      } else {
+        bldgHeight.push(bldgArray.shift());
+      }
+    }
+  }
+  
+  // Go back to ground level at the end
+  var lastPoint = points[points.length - 1]
+  points.push({
+    x: lastPoint.x,
+    y: 0
+  });
+  
+  // Remove the first two entries since they will always be 0,0
+  return points.slice(2, points.length);
+}
+
+document.body.onload = function () {
+  /*var heap = new MaxHeap();
+  var r = Math.random().toString();
+  var a = [];
+  for (var i = 2, len = r.length; i < len; i++) {
+    a.push(parseInt(r[i]));
+  }
+  
+  a.forEach(function (value) {
+    heap.push(value);
+  });
+  
+  var a2 = [];
+  while (heap.count > 0) {
+    a2.push(heap.pop());
+  }
+  a.sort()
+  document.body.innerHTML = a + "<br/>" + a2;
+  */
+  
+  var buildings = [
+    {
+      start: 0,
+      end: 4,
+      height: 1
+    },
+    {
+      start: 2,
+      end: 5,
+      height: 2
+    },
+    {
+      start: 6,
+      end: 7,
+      height: 1
+    }
+  ];
+  
+  document.body.innerHTML = JSON.stringify(Skyline(buildings));
+}
+</script>
+</body>
+</html>
